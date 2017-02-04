@@ -35,11 +35,22 @@ This project will deliver:
 # Install Directions
 
 1) First, get hidapi, a general cross-platform hid library
-   Info: http://www.signal11.us/oss/hidapi/
-   From github: https://github.com/signal11/hidapi
-   * Follow all directions in https://github.com/signal11/hidapi/blob/master/README.txt, specifically be sure to install the Fox-Toolkit 
+  * info: http://www.signal11.us/oss/hidapi/
+  * github: https://github.com/signal11/hidapi
+  * install directions: https://github.com/signal11/hidapi/blob/master/README.txt, specifically be sure to install the Fox-Toolkit 
 
-2) If you are getting this code off of github, be sure to have all the GNU autoconf stuff installed (see the hidapi readme to get this stuff.)
+2) If you get this code from github -
+  * be sure to have all the GNU autoconf stuff installed (see the hidapi readme above to get this stuff.)
+  * autoreconf --install
+
+3) Compile the code (linux)
+  * configure # you can pass --prefix, location to hidapi libs, etc here.
+  * make
+
+4) Install the product
+  * make install # or sudo make install, if installing on the whole system
+
+5) Enjoy :)
 
 NOTE: currently I am developing on ubuntu linux amd64 and raspbian - both debian variants of linux, 
 but will verify OSX shortly. ]    

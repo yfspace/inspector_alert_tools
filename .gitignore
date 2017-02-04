@@ -31,6 +31,15 @@ Makefile.in
 # http://www.gnu.org/software/texinfo
 
 /texinfo.tex
+
+# basic stuff.. mlw
 *.o
 *.a
 *~
+
+# project specific stuff
+/bin
+/m4
+/nbproject
+
+

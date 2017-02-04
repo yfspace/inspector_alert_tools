@@ -32,6 +32,15 @@ Makefile.in
 
 /texinfo.tex
 
+# more auto-generated stuff
+Makefile
+/config.h
+/config.log
+/config.status
+/libtool
+.deps
+/src/inspect_mon/inspect_mon
+
 # basic stuff.. mlw
 *.o
 *.a

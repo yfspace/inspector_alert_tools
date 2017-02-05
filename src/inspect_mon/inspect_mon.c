@@ -13,6 +13,7 @@
 
 #include <hidapi/hidapi.h>
 
+#include "insp_log.h"
 
 #define LOG_NONE   0
 #define LOG_FATAL  1
@@ -78,38 +79,6 @@ static const char *LOG_LEVELS[] = {"LOG_NONE", "ERROR", "WARN", "debug"};
 int mLogLevel = LOG_ERROR;
 int mDebugCode = 1; 
 
-#define log(log_level, msg, args...) \
-  ((log_level <= mLogLevel) ? _log(log_level, __FILE__, __LINE__, __FUNCTION__, msg, ##args), 0 : 0)
-
-void _log(int           log_level, 
-          const char   *file, 
-          unsigned int  line, 
-          const char   *function,
-          const char   *msg,  
-          ... ) 
-{
-    if (log_level > LOG_MAX) log_level = LOG_MAX;
-    
-    if (mDebugCode) {
-        fprintf(stderr, "[%s:%u (%s)] %s - ", file, line, function, LOG_LEVELS[log_level]);
-    } else { 
-        fprintf(stderr, "%s - ", LOG_LEVELS[log_level]);
-    }
-    
-    va_list args;
-    va_start(args, msg);
-    vfprintf(stderr, msg, args);
-    va_end(args);
-    fprintf(stderr, "\n");
-    
-    if (log_level == LOG_FATAL) {
-        fprintf(stderr, "ABORTING\n");
-        fflush(stderr);
-        exit(-1);
-    }
-}
-
-
 
 // find the hid device with the inspector 
 // this is used when a path is not specified. 
@@ -118,7 +87,7 @@ hid_device *open_device(unsigned short vendor_id,
                         const wchar_t *serial_number) 
 {
     hid_device *handle = NULL;
-    log(LOG_DEBUG, "Attempting to open device %us %us %ls", 
+    insp_log(INSP_LOG_DEBUG, "Attempting to open device %us %us %ls", 
         vendor_id, product_id, NULL_SAFE_LS(serial_number));
     
     // Open the device using the VID, PID,
@@ -126,10 +95,10 @@ hid_device *open_device(unsigned short vendor_id,
     handle = hid_open(vendor_id, product_id, serial_number);
     
     if (handle != NULL) {
-        log(LOG_NOTICE, "Successfully opened device %us %us %ls",
+        insp_log(INSP_LOG_NOTICE, "Successfully opened device %us %us %ls",
             vendor_id, product_id, NULL_SAFE_LS(serial_number));
     } else { 
-        log(LOG_DEBUG, "Unable to open device %us %us %ls",
+        insp_log(INSP_LOG_DEBUG, "Unable to open device %us %us %ls",
             vendor_id, product_id, NULL_SAFE_LS(serial_number));
     }
     return handle;
@@ -146,7 +115,7 @@ hid_device *find_and_open_device(const char *path)
         /* if (handle == NULL) handle = open_device(0xffff, 0xffff, NULL); ... */
     } 
     if (handle == NULL) {
-        log(LOG_FATAL, "Unable to find/open device (path=%s)",
+        insp_log(INSP_LOG_FATAL, "Unable to find/open device (path=%s)",
             NULL_SAFE(path));
     }
     return handle;
@@ -174,7 +143,7 @@ void list_all_devices()
 
 int __hid_api_ret = 0;
 #define CHECK_HIDAPI_CALL(x) \
-  ((0 > (__hid_api_ret = (x))) ? log(LOG_ERROR, "CALL FAILED : %s" , #x ), __hid_api_ret : __hid_api_ret)
+  ((0 > (__hid_api_ret = (x))) ? insp_log(INSP_LOG_ERROR, "CALL FAILED : %s" , #x ), __hid_api_ret : __hid_api_ret)
 
 void show_device_info(hid_device *handle) 
 {
@@ -208,7 +177,7 @@ int read_feature_rept(hid_device *handle, unsigned char rept_num)
     int report_size = hid_get_feature_report(handle, report_buf, sizeof(report_buf));
     
     if (report_size <= 0) {
-        log(LOG_FATAL, "Unable to read report %u (%x), returned %i: %s", 
+        insp_log(INSP_LOG_FATAL, "Unable to read report %u (%x), returned %i: %s", 
             rept_num, rept_num, report_size, NULL_SAFE(hid_error(handle)));
     }
     
@@ -227,7 +196,7 @@ int read_feature_rept(hid_device *handle, unsigned char rept_num)
     
     int fd = open("desc_rept", O_CREAT | O_TRUNC | O_WRONLY, 0755);
     if (fd != -1) {
-        log(LOG_NOTICE, "Writing desc_rept file");
+        insp_log(INSP_LOG_NOTICE, "Writing desc_rept file");
         int ret = write(fd, report_buf, report_size);
         close(fd);
     }
@@ -452,7 +421,7 @@ int main(int argc, char* argv[])
 {
     
     if (hid_init() != 0) { 
-        log(LOG_FATAL, "Unable to initialize hid library");
+        insp_log(INSP_LOG_FATAL, "Unable to initialize hid library");
     }
     
     // todo: parse args properly (including -v, and allow vendor,product,serial to be specified too. )
@@ -468,7 +437,7 @@ int main(int argc, char* argv[])
         char *check = argv[2];
         feature_rept_num = strtol(argv[2], &check, 0);
         if ((check == NULL) || (*check != 0) || (feature_rept_num > 0xff)) {
-            log(LOG_FATAL,"Invalid Record: %s", argv[2]);
+            insp_log(INSP_LOG_FATAL,"Invalid Record: %s", argv[2]);
         }
         do_read_feature_rept = 1;
     }

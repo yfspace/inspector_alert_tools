@@ -40,10 +40,13 @@ Makefile
 /libtool
 .deps
 /src/inspect_mon/inspect_mon
+.libs
 
 # basic stuff.. mlw
 *.o
 *.a
+*.la
+*.lo
 *~
 
 # project specific stuff
